@@ -1,5 +1,4 @@
 var particleSets = {active:false, id:''};
-
 var timelines = [];
 
 let snowParams = {
