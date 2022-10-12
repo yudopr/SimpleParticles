@@ -1,13 +1,13 @@
 window.addEventListener('DOMContentLoaded', onDOMLoaded);
 
 let particleParams = {
-    count: 100,
-    duration: {from:3, to:5},
-    type: 'circle', /* can be circle, square, text or img */
-    colorOverlife: true,
+    count: 50, /* particle count */
+    duration: {from:5, to:7}, /* duration range, the bigger the slower particles are moving */
+    type: 'circle', /* can be circle, square, text or img*/
+    colorOverlife: true, /* if true, the particle colour will change from start to end. If false, the particle colour will take starting color only */
     idleDie: {
-        active: true,
-        idleTime: 10
+        active: true, /* if true, timer will start on given time below */
+        idleTime: 10 /* in second before animation stop when no interaction */
     },
     playState:{
         repeat: -1, /* -1 for repeat endlessly, 2 to repeat the particles 2 times, 3  to repeat the particles 2 times, and so on */
@@ -16,10 +16,10 @@ let particleParams = {
     start:{
         x:{from:0, to:300},
         y:{from:-50, to:-10},
-        opacity:{from:0.3, to:0.5},
-        size:{from:2, to:2.5},
+        opacity:{from:0.5, to:0.8},
+        size:{from:5, to:5.5},
         rotation:{from:0, to:0},
-        color: 'white'
+        color: 'random' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
     },
     end:{
         x:{from:0, to:300},
@@ -27,7 +27,7 @@ let particleParams = {
         opacity:{from:0.3, to:0.5},
         size:{from:1, to:1.5},
         rotation:{from:0, to:0},
-        color: '#ffa800'
+        color: 'orange' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
     },
 };
 
