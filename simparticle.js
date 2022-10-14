@@ -96,33 +96,32 @@ function animateParticle(elm, _tl){
  * @param {*} _index index of target GSAP timeline within the SVG
  * @param {*} _sec specific second of the particle animation in lifecycle
  */
-function playParticle(_index, _sec){
-    timelines[_index].play(_sec ? _sec : timelines[_index].time());
+Array.prototype.playParticle = function(_index, _sec){
+    this[_index].play(_sec ? _sec : timelines[_index].time());
 }
 /**
  * playParticles function
  * play all particles in the stage from current position
  */
-function playParticles(){
-    timelines.forEach(timeline => {
+Array.prototype.playParticles = function(){
+    this.forEach(timeline => {
         timeline.play(timeline.time());
     });
 }
 /**
- * pauseParticles function
+ * pauseParticle function
  * pause specific particle set
  * @param {*} _index index of target GSAP timeline
  */
-function pauseParticle(_index){
-    timelines[_index].pause();
+Array.prototype.pauseParticle = function(_index){
+    this[_index].pause();
 }
-
 /**
  * pauseParticles function
  * pause all particles in the stage
  */
-function pauseParticles(){
-    timelines.forEach(timeline => {
+Array.prototype.pauseParticles = function(){
+    this.forEach(timeline => {
         timeline.pause();
     });
 }
@@ -134,7 +133,7 @@ Array.prototype.isParticlesPlaying = function(){
  * if you don't need it, just destroy it. Only looser hide the things!
  * @param {*} _containerID HTMLElement id that contain the particles
  */
-function destroyParticle(_containerID){
+Array.prototype.destroyParticle = function(_containerID){
     document.getElementById(_containerID).innerHTML = ''; 
     particleSets = false;
 }
@@ -167,7 +166,7 @@ function idleStop(_params){
     gsap.delayedCall(_params.idleDie.idleTime, function(){
         if(_params.idleDie.active){
             /* pause all particles */
-            pauseParticles();
+            if(timelines.length > 0) timelines.pauseParticles();
         }
     })
 }

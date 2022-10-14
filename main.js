@@ -33,14 +33,13 @@ let particleParams = {
 
 function onDOMLoaded(e) {
     var theParticles = setupParticles('particle_container', particleParams); // particle index 0
-    playParticle(0, 150);
+    theParticles.playParticle(0, 150);
 
     document.querySelector('#main').addEventListener('click', () => {
         if(theParticles.isParticlesPlaying()){
-             pauseParticles();
+            theParticles.pauseParticles();
         }else{
-            playParticles();
+            theParticles.playParticles();
         }
     })
-
 }
