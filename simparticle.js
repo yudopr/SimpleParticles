@@ -7,16 +7,17 @@ class SimpleParticle{
     
     static #SVGNS = "http://www.w3.org/2000/svg";
     #timelines = [];
+    #particleSetCount = 0;
     #containerID;
     // default params
     #params = {
-        count: 150, /* particle count */
+        count: 10, /* particle count */
         duration: {from:5, to:7}, /* duration range, the bigger the slower particles are moving */
         type: 'circle', /* can be circle, square, text or img*/
         colorOverlife: true, /* if true, the particle colour will change from start to end. If false, the particle colour will take starting color only */
         idleDie: {
             active: true, /* if true, timer will start on given time below */
-            idleTime: 3 /* in second before animation stop when no interaction */
+            idleTime: 5 /* in second before animation stop when no interaction */
         },
         playState:{
             repeat: -1, /* -1 or 0 to repeat endlessly, 2 to repeat the particles 2 times, 3  to repeat the particles 2 times, and so on */
@@ -36,15 +37,13 @@ class SimpleParticle{
             opacity:{from:0.3, to:0.5},
             size:{from:.5, to:1},
             rotation:{from:0, to:0},
-            color: 'orange' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
+            color: 'white' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
         },
     };
     
-
     constructor(_containerID, _params){
         this.#containerID = _containerID;
-        if(_params) this.#params = _params;
-        this.#setupParticles(this.#containerID, this.#params);
+        this.#setupParticles(this.#containerID, _params ? _params : this.#params);
     }
     /**
      * setupParticles function
@@ -62,17 +61,60 @@ class SimpleParticle{
                 ease: 'sine.inOut',
                 onStart: this.#idleStop,
                 onStartParams: [_params, this.#timelines],
-                onComplete: ()=>{console.log('KELAR');},
+                onComplete: ()=>{console.log('Finished');},
+                repeat: _params.playState.repeat,
+                yoyo: _params.playState.yoyo
+            }
+        });
+        var total = _params.count , container = document.querySelector(_containerID);
+        var svgElement = this.#createParticleContainer(container, true);
+        for (var i=0 ; i<total; i++){ 
+            var circ = document.createElementNS(SimpleParticle.#SVGNS, 'circle');   
+                if(container.childElementCount < total) {
+                svgElement.getElementsByTagName('g')[0].appendChild(circ);
+                timeline.set(circ, {
+                    attr: {
+                        cx: `random(${_params.start.x.from}, ${_params.start.x.to}, 1)`,
+                        cy: `random(${_params.start.y.from}, ${_params.start.y.to}, 1)`,
+                        r: `random(${_params.start.size.from}, ${_params.start.size.to})`,
+                        fill: _params.start.color == 'random' ? this.#randomColor() : _params.start.color
+                    },
+                    opacity: `random(${_params.start.opacity.from}, ${_params.start.opacity.to})`
+                }, 0);
+                circ.params = _params;
+                this.#animateParticle(circ, timeline);
+            }
+        };
+        container.appendChild(svgElement);
+        this.#timelines.push(timeline);
+        if(!this.isParticlesPlaying()){
+            this.#timelines.forEach(element => {
+                element.play(Math.floor(Math.random() * (_params.playState.repeat < 0 ? 3105 : element.duration()))+1);
+            });
+        }
+        return this.#timelines;
+    }
+    
+    addParticle(_containerID, _params){
+        if(!_params) _params = this.#params;
+        var timeline = gsap.timeline({
+            defaults: {
+                force3D: true,
+                ease: 'sine.inOut',
+                onStart: this.#idleStop,
+                onStartParams: [_params, this.#timelines],
+                onComplete: ()=>{console.log('Finished');},
                 repeat: _params.playState.repeat,
                 yoyo: _params.playState.yoyo
             }
         });
         var total = _params.count , container = document.querySelector(_containerID);
         var svgElement = this.#createParticleContainer(container);
+        var group = svgElement.getElementsByTagName('g')[svgElement.getElementsByTagName('g').length-1];
         for (var i=0 ; i<total; i++){ 
             var circ = document.createElementNS(SimpleParticle.#SVGNS, 'circle');   
                 if(container.childElementCount < total) {
-                svgElement.getElementsByTagName('g')[0].appendChild(circ);
+                group.appendChild(circ);
                 timeline.set(circ, {
                     attr: {
                         cx: `random(${_params.start.x.from}, ${_params.start.x.to}, 1)`,
@@ -102,10 +144,11 @@ class SimpleParticle{
      * @param {*} _tl GSAP TimelineMax generated by setupParticles function
      * @return {*} GSAP TimelineMax
      */
-    #animateParticle(elm, _tl){   
+    #animateParticle(elm, _tl){
+        var randomDuration = `random(${Math.round(elm.params.duration.from)}, ${Math.round(elm.params.duration.to)})`;
         /* Y-Axis animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             attr: {
                 cy: `random(${elm.params.end.y.from}, ${elm.params.end.y.to}, 1)`
             },
@@ -113,33 +156,33 @@ class SimpleParticle{
         }, .1);
         /* X-Axis animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             attr: {
                 cx: `random(${elm.params.end.x.from}, ${elm.params.end.x.to}, 1)`
-            },
-        }, .1);
+            }
+        }, .2);
         /* Size animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             attr: {
                 r: `random(${elm.params.end.size.from}, ${elm.params.end.size.to})`
             },
         }, .1);
         /* Color Fill animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             attr: {
                 fill: elm.params.colorOverlife ? elm.params.end.color == 'random' ? this.#randomColor() : elm.params.end.color : elm.params.start.color
             },
         }, .1);
         /* Opacity animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             opacity: `random(${elm.params.end.opacity.from}, ${elm.params.end.opacity.to})`,
         }, .1);
         /* Rotation animation */
         _tl.to(elm, {
-            duration: `random(${elm.params.duration.from}, ${elm.params.duration.to})`,
+            duration: randomDuration,
             rotation: `random(${elm.params.end.rotation.from}, ${elm.params.end.rotation.to}, 1)`,
         }, .1);
         return _tl;
@@ -187,9 +230,13 @@ class SimpleParticle{
      * @memberof SimpleParticle
      */
     isParticlesPlaying(){
-        return this.#timelines.reduce(function (previousValue, currentValue) {
-            return previousValue.isActive() && currentValue.isActive()
-        }, this.#timelines[0]);
+        var tlActiveStatus = [];
+        this.#timelines.forEach(element => {
+            tlActiveStatus.push(element.isActive());
+        });
+        return tlActiveStatus.reduce(function (a, b) {
+            return a && b
+        }, tlActiveStatus[0]);
     }
     /**
      * destroyParticle function
@@ -204,19 +251,32 @@ class SimpleParticle{
      * createParticleContainer function
      * private function to generate inline SVG to contain all particles
      * @param {*} _parentElement given parent name
+     * @param {*} _isNewParticle check if the caller need to create new instance of SVG or add a new group
      * @return {*} The root of SVGElement
      */
-    #createParticleContainer(_parentElement) {
-        var svgElement = document.createElementNS(SimpleParticle.#SVGNS, "svg");
-        svgElement.id = "svgParticleContainer";
-        svgElement.class = "container";
-        svgElement.setAttribute('width', '100%');
-        svgElement.setAttribute('height', '100%');
-        svgElement.setAttribute('viewBox', `0 0 ${_parentElement.offsetWidth} ${_parentElement.offsetHeight}`);
-        svgElement.appendChild(document.createElementNS(SimpleParticle.#SVGNS, "defs"));
-        var group = document.createElementNS(SimpleParticle.#SVGNS, "g");
-        svgElement.appendChild(group);
-        return svgElement;
+    #createParticleContainer(_parentElement, _isNewParticle) {
+        var svgElement;
+        if(_isNewParticle){
+            svgElement = document.createElementNS(SimpleParticle.#SVGNS, "svg");
+            svgElement.id = "svgParticleContainer";
+            svgElement.class = "container";
+            svgElement.setAttribute('width', '100%');
+            svgElement.setAttribute('height', '100%');
+            svgElement.setAttribute('viewBox', `0 0 ${_parentElement.offsetWidth} ${_parentElement.offsetHeight}`);
+            svgElement.appendChild(document.createElementNS(SimpleParticle.#SVGNS, "defs")); // for future update of using SVG filters
+            var group = document.createElementNS(SimpleParticle.#SVGNS, "g");
+            group.id = "particle_set" + this.#particleSetCount;
+            svgElement.appendChild(group);
+            this.#particleSetCount++;
+            return svgElement;
+        }else{
+            svgElement = document.querySelector('#svgParticleContainer');
+            var group = document.createElementNS(SimpleParticle.#SVGNS, "g");
+            group.id = "particle_set" + this.#particleSetCount;
+            this.#particleSetCount++;
+            svgElement.appendChild(group);
+            return svgElement; 
+        }
     }
     /**
      * idleStop function
@@ -244,4 +304,3 @@ class SimpleParticle{
         return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 }
-
