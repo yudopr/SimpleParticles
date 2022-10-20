@@ -1,7 +1,7 @@
 window.addEventListener('DOMContentLoaded', onDOMLoaded);
 
 let particleParams = {
-    count: 50, /* particle count */
+    count: 150, /* particle count */
     duration: {from:5, to:7}, /* duration range, the bigger the slower particles are moving */
     type: 'circle', /* can be circle, square, text or img*/
     colorOverlife: true, /* if true, the particle colour will change from start to end. If false, the particle colour will take starting color only */
@@ -32,8 +32,9 @@ let particleParams = {
 };
 
 function onDOMLoaded(e) {
-    var theParticles = setupParticles('particle_container', particleParams); // particle index 0
-    theParticles.playParticle(0, 150);
+    // var theParticles = setupParticles('particle_container', particleParams); // particle index 0
+    // theParticles.playParticle(0, 150);
+    var theParticles = new SimpleParticle('#particle_container');
 
     document.querySelector('#main').addEventListener('click', () => {
         if(theParticles.isParticlesPlaying()){
