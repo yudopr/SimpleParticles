@@ -27,7 +27,7 @@ class SimpleParticle{
             x:{from:0, to:300},
             y:{from:-50, to:-10},
             opacity:{from:0.5, to:0.8},
-            size:{from:2.5, to:3.5},
+            size:{from:7.5, to:10.5},
             rotation:{from:0, to:0},
             color: 'random' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
         },
@@ -39,6 +39,12 @@ class SimpleParticle{
             rotation:{from:0, to:0},
             color: 'white' /* random return random color from #000000 to #ffffff, any other CSS acceptable colours */
         },
+        filter:{ /* this effects is heavy resource, it will slows down your machine if use carelessly */
+            blur:{
+                active: true,
+                value: 1
+            }, /* another filter to be added */
+        }
     };
     
     constructor(_containerID, _params){
@@ -67,7 +73,7 @@ class SimpleParticle{
             }
         });
         var total = _params.count , container = document.querySelector(_containerID);
-        var svgElement = this.#createParticleContainer(container, true);
+        var svgElement = this.#createParticleContainer(container, _params, true);
         for (var i=0 ; i<total; i++){ 
             var circ = document.createElementNS(SimpleParticle.#SVGNS, 'circle');   
                 if(container.childElementCount < total) {
@@ -109,7 +115,7 @@ class SimpleParticle{
             }
         });
         var total = _params.count , container = document.querySelector(_containerID);
-        var svgElement = this.#createParticleContainer(container);
+        var svgElement = this.#createParticleContainer(container, _params);
         var group = svgElement.getElementsByTagName('g')[svgElement.getElementsByTagName('g').length-1];
         for (var i=0 ; i<total; i++){ 
             var circ = document.createElementNS(SimpleParticle.#SVGNS, 'circle');   
@@ -254,7 +260,7 @@ class SimpleParticle{
      * @param {*} _isNewParticle check if the caller need to create new instance of SVG or add a new group
      * @return {*} The root of SVGElement
      */
-    #createParticleContainer(_parentElement, _isNewParticle) {
+    #createParticleContainer(_parentElement, _params, _isNewParticle) {
         var svgElement;
         if(_isNewParticle){
             svgElement = document.createElementNS(SimpleParticle.#SVGNS, "svg");
@@ -263,20 +269,40 @@ class SimpleParticle{
             svgElement.setAttribute('width', '100%');
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('viewBox', `0 0 ${_parentElement.offsetWidth} ${_parentElement.offsetHeight}`);
-            svgElement.appendChild(document.createElementNS(SimpleParticle.#SVGNS, "defs")); // for future update of using SVG filters
+            
             var group = document.createElementNS(SimpleParticle.#SVGNS, "g");
             group.id = "particle_set" + this.#particleSetCount;
             svgElement.appendChild(group);
+            
+            svgElement.appendChild(document.createElementNS(SimpleParticle.#SVGNS, "defs")); // for future update of using SVG filters
+            if(_params.filter.blur.active){
+                let blurFilter = this.#createFilter(group, _params);
+                svgElement.getElementsByTagName('defs')[0].appendChild(blurFilter);
+            }
+            
             this.#particleSetCount++;
             return svgElement;
         }else{
             svgElement = document.querySelector('#svgParticleContainer');
             var group = document.createElementNS(SimpleParticle.#SVGNS, "g");
             group.id = "particle_set" + this.#particleSetCount;
+            if(_params.filter.blur.active){
+                let blurFilter = this.#createFilter(group, _params);
+                svgElement.getElementsByTagName('defs')[0].appendChild(blurFilter);
+            }
             this.#particleSetCount++;
             svgElement.appendChild(group);
             return svgElement; 
         }
+    }
+    #createFilter(_target, _params) {
+        let filter = document.createElementNS(SimpleParticle.#SVGNS, "filter");
+        let gaussian = document.createElementNS(SimpleParticle.#SVGNS, "feGaussianBlur");
+        gaussian.setAttribute("stdDeviation", _params.filter.blur.value);
+        filter.setAttribute("id", "blur-effect"+this.#particleSetCount);
+        filter.appendChild(gaussian);
+        _target.style.filter = "url(#blur-effect"+this.#particleSetCount+")";
+        return filter;
     }
     /**
      * idleStop function
