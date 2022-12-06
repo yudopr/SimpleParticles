@@ -3,7 +3,7 @@ A simple GSAP particle engine without the need to use canvas. Only need single d
 
 
 ### TODO
-~1. Change to class based ES6~
+~1. Change to class based ES6~<br>
 ~2. Implement function addParticle to add a new group of particle in the SVG~
 
 3. Fix the blipped particles on loopOut cycle, not happening on loopOut pingpong
